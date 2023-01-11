@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
+import Redis from 'ioredis';
+
+const redis = new Redis({
+  'port': 6379,
+  'host' : '127.0.0.1'
+})
 
 @Injectable()
 export class AppService {
@@ -49,9 +55,18 @@ export class AppService {
   
 
   public async fetchSignUpFormData() {
+
+    let cacheEntry = await redis.get('signUpFormData')
+    if (cacheEntry) {
+     const fetchData = JSON.parse(cacheEntry)
+      return {...fetchData, 'source' :'redis'}
+
+    }
     const url = 'https://cdn.contentful.com/spaces/0uk0rl0l436k/environments/dynamic-journey-mock/entries?sys.id=3FlD6Q9CUIdP4AkM7GZFwn'
     const fetchData = await this.fetchForms(url)
-    return fetchData
+    redis.setex('signUpFormData', 400, JSON.stringify(fetchData))
+
+    return {...fetchData, 'source' :'db'}
   }
 
   public async fetchLogInFormData() {

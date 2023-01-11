@@ -21,7 +21,9 @@ export class AppController {
   @MessagePattern('getSignUpPageData')
   async fetchSignUpFormData() {
     this.logger.log('fetch signUp form from cms');
-    return this.appService.fetchSignUpFormData()
+    const data = await this.appService.fetchSignUpFormData()
+    console.log("data", data)
+    return data
   }
 
   @MessagePattern('getLogInPageData')
