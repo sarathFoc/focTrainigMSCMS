@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import Redis from 'ioredis';
 
@@ -9,13 +10,24 @@ const redis = new Redis({
 
 @Injectable()
 export class AppService {
+  private cmsAuthToken;
+  private cmsFetchbBaseURL;
+  constructor(private configService: ConfigService) {
+  this.cmsAuthToken = this.configService.get<string>('cmsAuthToken');
+  this.cmsFetchbBaseURL = this.configService.get<String>('cmsFetchbBaseURL')
+    
+  }
+
+
   fetchForms = async (url) => {
+    console.log("cmsAuthToken",this.cmsAuthToken)
+    const access_token =  this.cmsAuthToken
     const result = await axios
       .get(
         `${url}`,
         {
           headers: {
-            Authorization: 'Bearer KmFmRhJk-8Gbeoui88FhLapa9jZRieKyp_ZriuHlofs',
+            Authorization: access_token,     
           },
         },
       )
@@ -29,25 +41,25 @@ export class AppService {
   };
 
   public async fetchFormData() {
-    const url = 'https://cdn.contentful.com/spaces/0uk0rl0l436k/environments/dynamic-journey-mock/entries?sys.id=2bmfj97ce1TI85Ph9OXkjS'
+    const url = `${this.cmsFetchbBaseURL}sys.id=2bmfj97ce1TI85Ph9OXkjS`
     const fetchData = await this.fetchForms(url)
     return fetchData
   }
 
   public async fetchBlogData() {
-    const url = 'https://cdn.contentful.com/spaces/0uk0rl0l436k/environments/dynamic-journey-mock/entries?sys.id=WTjIgfi3Pm5tx4imQy1Bx'
+    const url = `${this.cmsFetchbBaseURL}sys.id=WTjIgfi3Pm5tx4imQy1Bx`
     const fetchData = await this.fetchForms(url)
     return fetchData
   }
 
   public async fetchBlogModalData() {
-    const url = 'https://cdn.contentful.com/spaces/0uk0rl0l436k/environments/dynamic-journey-mock/entries?sys.id=6PgH6RSPDRSNheV4sDVeKc'
+    const url = `${this.cmsFetchbBaseURL}sys.id=6PgH6RSPDRSNheV4sDVeKc`
     const fetchData = await this.fetchForms(url)
     return fetchData
   }
 
   public async getBlogHeaderData() {
-    const url = 'https://cdn.contentful.com/spaces/0uk0rl0l436k/environments/dynamic-journey-mock/entries?sys.id=5ShF6frts704Hs7JeSgezu'
+    const url = `${this.cmsFetchbBaseURL}sys.id=5ShF6frts704Hs7JeSgezu`
     const fetchData = await this.fetchForms(url)
     return fetchData
   }
@@ -62,15 +74,15 @@ export class AppService {
       return {...fetchData, 'source' :'redis'}
 
     }
-    const url = 'https://cdn.contentful.com/spaces/0uk0rl0l436k/environments/dynamic-journey-mock/entries?sys.id=3FlD6Q9CUIdP4AkM7GZFwn'
+    const url = `${this.cmsFetchbBaseURL}sys.id=3FlD6Q9CUIdP4AkM7GZFwn`
     const fetchData = await this.fetchForms(url)
     redis.setex('signUpFormData', 400, JSON.stringify(fetchData))
 
     return {...fetchData, 'source' :'db'}
   }
 
-  public async fetchLogInFormData() {
-    const url = 'https://cdn.contentful.com/spaces/0uk0rl0l436k/environments/dynamic-journey-mock/entries?sys.id=53ngfQ9Xum7iM96bn87AGv'
+  public async fetchLogInFormData() {    
+    const url = `${this.cmsFetchbBaseURL}sys.id=53ngfQ9Xum7iM96bn87AGv`
     const fetchData = await this.fetchForms(url)
     return fetchData
   }
